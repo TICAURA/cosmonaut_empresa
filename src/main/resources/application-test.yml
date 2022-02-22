@@ -1,0 +1,36 @@
+micronaut:
+  application:
+    name: cosmonaut_empresa
+    default-charset: UTF-8
+  server:
+    port: ${APLICACION_PUERTO:8080}
+  security:
+    authentication: bearer
+    token:
+      jwt:
+        signatures:
+          secret:
+            generator:
+              secret: '"${JWT_GENERATOR_SIGNATURE_SECRET:pleaseChangeThisSecretForANewOne}"'
+  router:
+    static-resources:
+      swagger:
+        paths: classpath:META-INF/swagger
+        mapping: /swagger/**
+      rapidoc:
+        paths: classpath:META-INF/swagger/views/rapidoc
+        mapping: /rapidoc/**
+      swagger-ui:
+        paths: classpath:META-INF/swagger/views/swagger-ui
+        mapping: /swagger-ui/**
+      redoc:
+        paths: classpath:META-INF/swagger/views/redoc
+        mapping: /redoc/**
+datasources:
+  default:
+    url: jdbc:postgresql://localhost:5432/cosmonaut
+    driverClassName: org.postgresql.Driver
+    username: cosmonaut
+    password: 'c0ns0l1d4MX_2021'
+    schema-generate: NONE
+    dialect: POSTGRES
