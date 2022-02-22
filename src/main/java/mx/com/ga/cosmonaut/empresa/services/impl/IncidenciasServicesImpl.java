@@ -525,15 +525,11 @@ public class IncidenciasServicesImpl implements IncidenciasServices {
                         incidenciaDto.setDuracion(0);
                     }
                 } else {
-                    if (incidencias.getTipoEventoId() ==13 || incidencias.getTipoEventoId() == 14) {
-                        incidenciaDto.setHeTiempo(incidencias.getNumeroHorasExtras());
-                    }
                     incidenciaDto.setDuracion(0);
                 }
                 if (incidencias.getTipoEventoId() ==5 )
                 {
-                    if (incidencias.getNumeroDias() != null)
-                        incidenciaDto.setDuracion(incidencias.getNumeroDias().intValue());
+                    incidenciaDto.setDuracion(incidencias.getNumeroDias().intValue());
                     incidenciaDto.setHeTiempo(0);
                 }
 
@@ -544,7 +540,7 @@ public class IncidenciasServicesImpl implements IncidenciasServices {
                 }
 
               //  incidenciaDto.setDuracion(incidencias.getNumeroHorasExtras() != null ? incidencias.getNumeroHorasExtras() : 0);
-                //incidenciaDto.setHeTiempo(incidencias.getNumeroDias() != null ? incidencias.getNumeroDias().intValue() : 0);
+                incidenciaDto.setHeTiempo(incidencias.getNumeroDias() != null ? incidencias.getNumeroDias().intValue() : 0);
                 incidenciaDto.setFechaInicio(incidencias.getFechaInicio() != null ? new Timestamp(incidencias.getFechaInicio().getTime()) : null);
                 incidenciaDto.setFechaAplicacion(incidencias.getFechaAplicacion() != null ? new Timestamp(incidencias.getFechaAplicacion().getTime()) : null);
                 listaCargaIncidencias.add(incidencias);

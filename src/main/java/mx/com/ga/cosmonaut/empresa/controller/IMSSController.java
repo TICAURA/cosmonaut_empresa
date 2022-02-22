@@ -36,6 +36,7 @@ public class IMSSController {
             return HttpResponse.badRequest(Utilidades.respuestaError());
         }
     }
+	
 
     @Operation(summary = "${cosmonaut.controller.imss.listarmovimientos.resumen}",
             description = "${cosmonaut.controller.imss.listarmovimientos.descripcion}",

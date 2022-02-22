@@ -41,6 +41,4 @@ public interface NmaCuentaBancoService {
     RespuestaGenerica obtenerCuentaClienteFuncion(Integer idCentrocCliente) throws ServiceException;
 
     RespuestaGenerica listarCuentaClienteDinamico(NmaCuentaBanco cuentaBanco) throws ServiceException;
-
-    RespuestaGenerica eliminar(Integer idCentrocCliente, Integer personaId) throws ServiceException;
 }

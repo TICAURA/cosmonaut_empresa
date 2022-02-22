@@ -34,7 +34,6 @@ public class ChatController {
         }
     }
 
-    
     @Operation(summary = "${cosmonaut.controller.chat.listarusuario.resumen}",
             description = "${cosmonaut.controller.chat.listarusuario.descripcion}",
             operationId = "chat.listarusuario")

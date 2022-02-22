@@ -536,7 +536,7 @@ public class PercepcionDeduccionServiceImpl implements PercepcionDeduccionServic
     public RespuestaGenerica obtieneDeduccionesPoliticaEstatus(Integer clienteId, boolean estatus) throws ServiceException {
         try {
             // SE AGREGA 021 IMSS
-            List<String> especializacionesNoValidas = Arrays.asList("001", "002", "006", "007", "010", "011", "021", "022", "107","020","RET");
+            List<String> especializacionesNoValidas = Arrays.asList("001", "002", "006", "007", "010", "011", "021", "022", "107");
             RespuestaGenerica respuesta = new RespuestaGenerica();
 
             List<NmmConceptoDeduccion> deduccions = nmmConceptoDeduccionRepository

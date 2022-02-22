@@ -101,7 +101,11 @@ public class CentroCostosClienteServiceImpl implements CentroCostosClienteServic
                                       RespuestaGenerica respuesta) throws ServiceException {
         try{
             if(respuesta.isResultado()){
-                respuesta = validarEstructura(centroCostosClienteDto);
+                if (!cambioPrimitivoMultiEmpresa(centroCostosClienteDto.getMultiempresa())){
+                    respuesta = validarEstructura(centroCostosClienteDto);
+                } else {
+                    respuesta = validarEstructura(centroCostosClienteDto);
+                }
                 if (respuesta.isResultado()){
                     if(centroCostosClienteDto.getImagen()!=null){
                         String ruta = generateUrl(centroCostosClienteDto);
@@ -280,6 +284,7 @@ public class CentroCostosClienteServiceImpl implements CentroCostosClienteServic
                                        RespuestaGenerica respuesta) throws ServiceException {
         try{
             if (centroCostosClienteDto.getCentrocClienteId() != null){
+                if(respuesta.isResultado()){
                     if (cambioPrimitivoMultiEmpresa(centroCostosClienteDto.getMultiempresa())){
                         respuesta = validarEstructuraModificar(centroCostosClienteDto);
                     }else
@@ -306,6 +311,7 @@ public class CentroCostosClienteServiceImpl implements CentroCostosClienteServic
                         respuesta.setResultado(Constantes.RESULTADO_EXITO);
                         respuesta.setMensaje(Constantes.EXITO);
                     }
+                }
             }else {
                 respuesta.setResultado(Constantes.RESULTADO_ERROR);
                 respuesta.setMensaje(Constantes.ID_NULO);
@@ -503,22 +509,17 @@ public class CentroCostosClienteServiceImpl implements CentroCostosClienteServic
     private RespuestaGenerica validarEstructura(NclCentrocClienteDto centroCostosClienteDto) throws ServiceException{
         try{
             RespuestaGenerica respuesta = new RespuestaGenerica();
-            if(centroCostosClienteDto.getRfc() != null){
-                if (validarDuplicateRfc(centroCostosClienteDto)){
-                        if(Validar.rfc(centroCostosClienteDto.getRfc())){
-                            respuesta.setMensaje(Constantes.EXITO);
-                            respuesta.setResultado(Constantes.RESULTADO_EXITO);
-                        }else{
-                            respuesta.setMensaje(Constantes.RFC_NO_VALIDO);
-                            respuesta.setResultado(Constantes.RESULTADO_ERROR);
-                        }
+            if (validarDuplicateRfc(centroCostosClienteDto)){
+                if(Validar.rfc(centroCostosClienteDto.getRfc())){
+                    respuesta.setMensaje(Constantes.EXITO);
+                    respuesta.setResultado(Constantes.RESULTADO_EXITO);
                 }else{
-                    respuesta.setMensaje(Constantes.RFC_DUPLICADO);
+                    respuesta.setMensaje(Constantes.RFC_NO_VALIDO);
                     respuesta.setResultado(Constantes.RESULTADO_ERROR);
                 }
             }else{
-                respuesta.setMensaje(Constantes.EXITO);
-                respuesta.setResultado(Constantes.RESULTADO_EXITO);
+                respuesta.setMensaje(Constantes.RFC_DUPLICADO);
+                respuesta.setResultado(Constantes.RESULTADO_ERROR);
             }
             return respuesta;
         }catch (Exception e){
@@ -530,7 +531,7 @@ public class CentroCostosClienteServiceImpl implements CentroCostosClienteServic
     private RespuestaGenerica validarEstructuraModificar(NclCentrocClienteDto centroCostosClienteDto) throws ServiceException{
         try{
             RespuestaGenerica respuesta = new RespuestaGenerica(null,Constantes.RESULTADO_EXITO,Constantes.EXITO);
-            if (centroCostosClienteDto.getRfc() != null){
+            if (!cambioPrimitivoMultiEmpresa(centroCostosClienteDto.getMultiempresa())){
                 //Se verifica si es multi empresa, en caso de ser multiempresa solo podra modificar RFC a los uqe tenga dados de alta como cleinte
                 if (validarDuplicadoRfcModificarMultiEmp(centroCostosClienteDto)) {
                     if (Validar.rfc(centroCostosClienteDto.getRfc())) {
@@ -544,7 +545,7 @@ public class CentroCostosClienteServiceImpl implements CentroCostosClienteServic
                     respuesta = validarEstructura(centroCostosClienteDto);
                 }
             }else {
-                /*if (validarDuplicadoRfcModificar(centroCostosClienteDto)) {
+                if (validarDuplicadoRfcModificar(centroCostosClienteDto)) {
                     if (Validar.rfc(centroCostosClienteDto.getRfc())) {
                         respuesta.setMensaje(Constantes.EXITO);
                         respuesta.setResultado(Constantes.RESULTADO_EXITO);
@@ -554,8 +555,7 @@ public class CentroCostosClienteServiceImpl implements CentroCostosClienteServic
                     }
                 } else {
                     respuesta = validarEstructura(centroCostosClienteDto);
-                }*/
-                respuesta = validarEstructura(centroCostosClienteDto);
+                }
             }
             return respuesta;
         }catch (Exception e){
@@ -660,7 +660,7 @@ public class CentroCostosClienteServiceImpl implements CentroCostosClienteServic
         }
     }
 
-    private boolean validarDuplicateRfc(NclCentrocClienteDto centroCostosClienteDto) throws ServiceException {//Sabemos que es cliente....
+    private boolean validarDuplicateRfc(NclCentrocClienteDto centroCostosClienteDto) throws ServiceException {
         try {
             if (centroCostosClienteDto.getCentroCostosCentrocClienteId() != null
                 && centroCostosClienteDto.getCentroCostosCentrocClienteId().getCentrocClienteId() != null){

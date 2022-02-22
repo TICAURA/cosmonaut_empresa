@@ -47,6 +47,7 @@ public class CentroCostosClienteController {
         }
     }
 
+
     @BitacoraSistema
     @BitacoraUsuario
     @Operation(summary = "${cosmonaut.controller.centrocliente.guardarempresa.resumen}",

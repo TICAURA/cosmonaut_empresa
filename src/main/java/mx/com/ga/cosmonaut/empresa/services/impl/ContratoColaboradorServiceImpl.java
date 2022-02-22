@@ -1,11 +1,9 @@
 package mx.com.ga.cosmonaut.empresa.services.impl;
 
 import mx.com.ga.cosmonaut.common.dto.NcoContratoColaboradorDto;
-import mx.com.ga.cosmonaut.common.dto.NmaCuentaBancoDto;
 import mx.com.ga.cosmonaut.common.dto.RespuestaGenerica;
 import mx.com.ga.cosmonaut.common.dto.RespuestaGoogleStorage;
 import mx.com.ga.cosmonaut.common.dto.consultas.ContratoColaboradorConsulta;
-import mx.com.ga.cosmonaut.common.entity.administracion.NmaCuentaBanco;
 import mx.com.ga.cosmonaut.common.entity.calculo.NcrNominaXperiodo;
 import mx.com.ga.cosmonaut.common.entity.colaborador.ContratoColaborador;
 import mx.com.ga.cosmonaut.common.entity.colaborador.ContratoColaboradorPK;
@@ -22,7 +20,6 @@ import mx.com.ga.cosmonaut.common.util.Constantes;
 import mx.com.ga.cosmonaut.common.util.ObjetoMapper;
 import mx.com.ga.cosmonaut.common.util.Utilidades;
 import mx.com.ga.cosmonaut.empresa.services.ContratoColaboradorService;
-import mx.com.ga.cosmonaut.empresa.services.NmaCuentaBancoService;
 import mx.com.ga.cosmonaut.empresa.services.PagosLiquidacionColaboradorServices;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,9 +56,6 @@ public class ContratoColaboradorServiceImpl implements ContratoColaboradorServic
 
     @Inject
     private ContratoColaboradorPKRepository colaboradorPKRepository;
-
-    @Inject
-    private NmaCuentaBancoService nmaCuentaBancoService;
 
     @Override
     public RespuestaGenerica guardar(NcoContratoColaborador contratoColaborador) throws ServiceException {
@@ -130,14 +124,6 @@ public class ContratoColaboradorServiceImpl implements ContratoColaboradorServic
                 colaborador.getContratoColaboradorPK().setFechaContrato(contratoColaborador.getFechaContrato());
                 colaborador.getContratoColaboradorPK().setPersonaId(contratoColaborador.getPersonaId().getPersonaId());
                 colaboradorPKRepository.update(colaborador);
-                //Se agrega validacion para cambio de metodo de pago
-                if(contratoColaborador.getMetodoPagoId().getMetodoPagoId()!=null && contratoColaborador.getMetodoPagoId().getMetodoPagoId()!=4){
-                    try {
-                            nmaCuentaBancoService.eliminar(contratoColaborador.getCentrocClienteId().getCentrocClienteId(),contratoColaborador.getPersonaId().getPersonaId());
-                    }catch (Exception e){
-                        e.printStackTrace();
-                    }
-                }
                 //ncoContratoColaboradorRepository.update(contratoColaborador);
                 respuesta.setDatos(ncoContratoColaboradorRepository.findByFechaContratoAndPersonaIdPersonaIdAndCentrocClienteIdCentrocClienteId(
                         contratoColaborador.getFechaContrato(),
@@ -331,6 +317,7 @@ public class ContratoColaboradorServiceImpl implements ContratoColaboradorServic
            List<NcoContratoColaborador> ncoContratoColaborador= ncoContratoColaboradorRepository
                     .findByCentrocClienteIdCentrocClienteIdAndEsActivo(id.intValue() ,activo);
             respuesta.setDatos(ncoContratoColaborador);
+
             respuesta.setResultado(Constantes.RESULTADO_EXITO);
             respuesta.setMensaje(Constantes.EXITO);
             return respuesta;

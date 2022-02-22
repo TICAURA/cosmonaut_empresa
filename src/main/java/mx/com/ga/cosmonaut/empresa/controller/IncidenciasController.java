@@ -25,6 +25,7 @@ public class IncidenciasController {
     @Inject
     private IncidenciasServices incidenciasServices;
 
+
     @BitacoraSistema
     @BitacoraUsuario
     @Operation(summary = "${cosmonaut.controller.incidencias.guardar.resumen}",
@@ -77,6 +78,7 @@ public class IncidenciasController {
             return HttpResponse.badRequest(Utilidades.respuestaError());
         }
     }
+	
 
     @Operation(summary = "${cosmonaut.controller.incidencias.eliminar.resumen}",
             description = "${cosmonaut.controller.incidencias.eliminar.descripcion}",

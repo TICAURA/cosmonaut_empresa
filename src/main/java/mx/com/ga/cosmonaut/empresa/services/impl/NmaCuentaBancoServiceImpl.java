@@ -29,8 +29,6 @@ public class NmaCuentaBancoServiceImpl implements NmaCuentaBancoService {
     @Inject
     NclCentrocClienteRepository nclCentrocClienteRepository;
 
-    private boolean mismaCuenta;
-
     @Override
     public RespuestaGenerica findAll() throws ServiceException {
 
@@ -101,18 +99,6 @@ public class NmaCuentaBancoServiceImpl implements NmaCuentaBancoService {
         } catch (Exception e) {
             throw new ServiceException(Constantes.ERROR_CLASE + this.getClass().getSimpleName()
                     + Constantes.ERROR_METODO + " listarCuentaClienteDinamico " + Constantes.ERROR_EXCEPCION, e);
-        }
-    }
-
-    @Override
-    public RespuestaGenerica eliminar(Integer idCentrocCliente, Integer personaId) throws ServiceException {
-
-        try {
-            nmaCuentaBancoRepository.updateEliminarCLABE(idCentrocCliente,personaId);
-            return new RespuestaGenerica(null, Constantes.RESULTADO_EXITO, Constantes.EXITO);
-        } catch (Exception e) {
-            throw new ServiceException(Constantes.ERROR_CLASE + this.getClass().getSimpleName()
-                    + Constantes.ERROR_METODO + " eliminar " + Constantes.ERROR_EXCEPCION, e);
         }
     }
 
@@ -201,33 +187,23 @@ public class NmaCuentaBancoServiceImpl implements NmaCuentaBancoService {
     public RespuestaGenerica guardar(NmaCuentaBancoDto nmaCuentaBancoDto) throws ServiceException {
         try {
             RespuestaGenerica respuesta = validarCamposObligatorios(nmaCuentaBancoDto);
+            if (respuesta.isResultado()) {
+                respuesta = validarEstructura(nmaCuentaBancoDto);
                 if (respuesta.isResultado()) {
                     respuesta = validarCuentaClabe(nmaCuentaBancoDto);
                     if (respuesta.isResultado()) {
                         nmaCuentaBancoDto.getBancoId().setRazonSocial((String) respuesta.getDatos());
                         nmaCuentaBancoDto.setEsActivo(Constantes.ESTATUS_ACTIVO);
                         respuesta = new RespuestaGenerica();
-                        if(mismaCuenta){
-                            if(nmaCuentaBancoDto.getNcoPersona()==null){
-                                respuesta.setMensaje(Constantes.CUENTA_BANCARIA_DUPLICADA);
-                                respuesta.setResultado(Constantes.RESULTADO_ERROR);
-                                return respuesta;
-                            }else {
-                                respuesta.setDatos(ObjetoMapper.map(
-                                        nmaCuentaBancoRepository.update(
-                                                ObjetoMapper.map(nmaCuentaBancoDto, NmaCuentaBanco.class)),
-                                        NmaCuentaBancoDto.class));
-                            }
-                        }else {
-                            respuesta.setDatos(ObjetoMapper.map(
-                                    nmaCuentaBancoRepository.save(
-                                            ObjetoMapper.map(nmaCuentaBancoDto, NmaCuentaBanco.class)),
-                                    NmaCuentaBancoDto.class));
-                        }
+                        respuesta.setDatos(ObjetoMapper.map(
+                                nmaCuentaBancoRepository.save(
+                                        ObjetoMapper.map(nmaCuentaBancoDto, NmaCuentaBanco.class)),
+                                NmaCuentaBancoDto.class));
                         respuesta.setResultado(Constantes.RESULTADO_EXITO);
                         respuesta.setMensaje(Constantes.EXITO);
                     }
                 }
+            }
             return respuesta;
         } catch (ServiceException e) {
             throw new ServiceException(Constantes.ERROR_CLASE + this.getClass().getSimpleName()
@@ -308,9 +284,11 @@ public class NmaCuentaBancoServiceImpl implements NmaCuentaBancoService {
     private RespuestaGenerica validarEstructura(NmaCuentaBancoDto nmaCuentaBancoDto) throws ServiceException {
         try {
             RespuestaGenerica respuesta = new RespuestaGenerica();
-            if (validarDuplicateCuentaBanco(nmaCuentaBancoDto)){
-                if (validarDuplicateClabeBanco(nmaCuentaBancoDto)){
-                    respuesta.setDatos(nmaCuentaBancoDto.getBancoId());
+            Integer idPersona=0;
+            if(nmaCuentaBancoDto.getNcoPersona()!=null)
+                idPersona=nmaCuentaBancoDto.getNcoPersona().getPersonaId();
+            if (validarDuplicateCuentaBanco(nmaCuentaBancoDto.getNumeroCuenta(), nmaCuentaBancoDto.getBancoId().getBancoId(),nmaCuentaBancoDto.getNclCentrocCliente().getCentrocClienteId(),idPersona)){
+                if (validarDuplicateClabeBanco(nmaCuentaBancoDto.getClabe(),nmaCuentaBancoDto.getNclCentrocCliente().getCentrocClienteId(),idPersona)) {
                     respuesta.setMensaje(Constantes.EXITO);
                     respuesta.setResultado(Constantes.RESULTADO_EXITO);
                 } else {
@@ -412,41 +390,34 @@ public class NmaCuentaBancoServiceImpl implements NmaCuentaBancoService {
                     respuesta.setResultado(Constantes.RESULTADO_EXITO);
                 }
             }
-
             return respuesta;
         } catch (Exception e) {
             throw new ServiceException(Constantes.ERROR_CLASE + this.getClass().getSimpleName()
-                    + Constantes.ERROR_METODO + " validarCamposObligatorios  " + Constantes.ERROR_EXCEPCION, e);
+                    + Constantes.ERROR_METODO + " validarCamposObligatorios " + Constantes.ERROR_EXCEPCION, e);
         }
     }
 
-    private boolean validarDuplicateCuentaBanco(NmaCuentaBancoDto nmaCuentaBancoDto) throws ServiceException {
+    private boolean validarDuplicateCuentaBanco(String numeroCuenta, Long bancoId,Integer clienteId, Integer idPersona) throws ServiceException {
         try {
-            mismaCuenta=false;
-                List<NmaCuentaBanco> lstNmaCntBank= nmaCuentaBancoRepository.findByNumeroCuenta(nmaCuentaBancoDto.getNumeroCuenta(), nmaCuentaBancoDto.getBancoId().getBancoId(), nmaCuentaBancoDto.getNclCentrocCliente().getCentrocClienteId());
-                boolean flag= lstNmaCntBank.isEmpty();
-                if(!flag){
-                    for (NmaCuentaBanco cuenta:lstNmaCntBank) {
-                        // La cuenta bancaria pernetenede a la empresa y el ncopérsona es null
-                        if(cuenta.getNcoPersona()==null){
-                            //Si el idPersona que llega es null entonces pertenece a la empresa,
-                            //Ahora verificamos que la cuenta banco no sea null para evitar nullpointer
-                            // se verifica que la tabla cuenta  no tenga el mismo registro que el que se manda
-                            // por lo que debe dejarla pasar
-                            if(nmaCuentaBancoDto.getNcoPersona()==null && cuenta.getCuentaBancoId().equals(nmaCuentaBancoDto.getCuentaBancoId())){
-                                flag=true;
-                                mismaCuenta=true;
-                                break;
-                            }
-                            continue;
-                        }
-                        if (nmaCuentaBancoDto.getNcoPersona()!= null && cuenta.getNcoPersona().getPersonaId().equals(nmaCuentaBancoDto.getNcoPersona().getPersonaId())) {
-                            flag = true;
-                            mismaCuenta=true;
+            List<NmaCuentaBanco> lstNmaCntBank= nmaCuentaBancoRepository.findByNumeroCuenta(numeroCuenta, bancoId,clienteId);
+            boolean flag= lstNmaCntBank.isEmpty();
+            if(!flag){
+                for (NmaCuentaBanco cuenta:lstNmaCntBank) {
+                    //La cuenta bancaria pernetenede a la empresa y el ncopérsona es null
+                    if(cuenta.getNcoPersona()==null){
+                        //Si el idPersona que llega es null o 0 entonces pertenece a la empresa por lo que debe dejarla pasar
+                        if(idPersona==0){
+                            flag=true;
                             break;
                         }
+                        continue;
+                    }
+                    if (cuenta.getNcoPersona().getPersonaId().equals(idPersona)) {
+                        flag = true;
+                        break;
                     }
                 }
+            }
             return flag;
         } catch (Exception e) {
             throw new ServiceException(Constantes.ERROR_CLASE + this.getClass().getSimpleName()
@@ -454,26 +425,23 @@ public class NmaCuentaBancoServiceImpl implements NmaCuentaBancoService {
         }
     }
 
-    private boolean validarDuplicateClabeBanco(NmaCuentaBancoDto nmaCuentaBancoDto ) throws ServiceException {
+    private boolean validarDuplicateClabeBanco(String clabe,Integer clienteId, Integer idPersona) throws ServiceException {
         try {
-            List<NmaCuentaBanco> lstCtaBank=nmaCuentaBancoRepository.findByClabeAndNclCentrocClienteCentrocClienteId(nmaCuentaBancoDto.getClabe(),nmaCuentaBancoDto.getNclCentrocCliente().getCentrocClienteId());
+            List<NmaCuentaBanco> lstCtaBank=nmaCuentaBancoRepository.findByClabeAndNclCentrocClienteCentrocClienteId(clabe,clienteId);
             boolean flag=lstCtaBank.isEmpty();
-            mismaCuenta=false;
             if(!flag){
                 for (NmaCuentaBanco cuenta:lstCtaBank) {
                     //La cuenta bancaria pernetenede a la empresa y el ncopérsona es null
-                    if(cuenta.getNcoPersona()==null ){
+                    if(cuenta.getNcoPersona()==null){
                         //Si el idPersona que llega es null o 0 entonces pertenece a la empresa por lo que debe dejarla pasar
-                        if(nmaCuentaBancoDto.getNcoPersona()==null && cuenta.getCuentaBancoId()!=null && cuenta.getCuentaBancoId().equals(nmaCuentaBancoDto.getCuentaBancoId())){
+                        if(idPersona==0){
                             flag=true;
-                            mismaCuenta=true;
                             break;
                         }
                         continue;
                     }
-                    if (nmaCuentaBancoDto.getNcoPersona()!=null && cuenta.getNcoPersona().getPersonaId().equals(nmaCuentaBancoDto.getNcoPersona().getPersonaId())) {
+                    if (cuenta.getNcoPersona().getPersonaId().equals(idPersona)) {
                         flag = true;
-                        mismaCuenta=true;
                         break;
                     }
                 }

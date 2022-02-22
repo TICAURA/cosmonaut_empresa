@@ -5,7 +5,6 @@ import mx.com.ga.cosmonaut.common.dto.RespuestaGenericaGruop;
 import mx.com.ga.cosmonaut.common.dto.imss.IMSSFiltradoRequest;
 import mx.com.ga.cosmonaut.common.dto.imss.IMSSFiltradoResponse;
 import mx.com.ga.cosmonaut.common.dto.imss.VariabilidadFiltradoRequest;
-import mx.com.ga.cosmonaut.common.dto.imss.VariabilidadFiltradoResponse;
 import mx.com.ga.cosmonaut.common.entity.cliente.NclCentrocCliente;
 import mx.com.ga.cosmonaut.common.entity.colaborador.NcoKardexColaborador;
 import mx.com.ga.cosmonaut.common.exception.ServiceException;
@@ -227,13 +226,7 @@ public class IMSSServiceImpl implements IMSSService {
     public RespuestaGenerica filtrarVariabilidad(VariabilidadFiltradoRequest request) throws ServiceException {
         try {
             RespuestaGenerica respuesta = new RespuestaGenerica();
-            List<VariabilidadFiltradoResponse> lstfiltro=imssRepository.filtroVariabilidad(request);
-            for(VariabilidadFiltradoResponse filtro:lstfiltro){
-                DateFormat df = new SimpleDateFormat("dd-MMM-yyyy", new Locale("es", "MX"));
-                String fecha="Del " + df.format(filtro.getFechaInicio()) +" al " +df.format(filtro.getFechaFin());
-                filtro.setPeriodoCalculo(fecha);
-            }
-            respuesta.setDatos(lstfiltro);
+            respuesta.setDatos(imssRepository.filtroVariabilidad(request));
             respuesta.setResultado(Constantes.RESULTADO_EXITO);
             respuesta.setMensaje(Constantes.EXITO);
             return respuesta;

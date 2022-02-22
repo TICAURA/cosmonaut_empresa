@@ -693,8 +693,8 @@ public class CargaMasivaEmpleadoServicesImpl implements CargaMasivaEmpleadoServi
         respuesta = validacionServices.validaCelular(empleado.getCelular());
         empleado.setErrores(UtilidadesReportes.generaMensajeError(ConstantesReportes.CARGA_MASIVA_CELULAR,respuesta,empleado.getErrores()));
 
-        //respuesta = validacionServices.validaNumeroObligatorio(empleado.getDiasVacaciones());
-        //empleado.setErrores(UtilidadesReportes.generaMensajeError(ConstantesReportes.CARGA_MASIVA_SALDO_VACACIONES,respuesta,empleado.getErrores()));
+        respuesta = validacionServices.validaNumeroObligatorio(empleado.getDiasVacaciones());
+        empleado.setErrores(UtilidadesReportes.generaMensajeError(ConstantesReportes.CARGA_MASIVA_SALDO_VACACIONES,respuesta,empleado.getErrores()));
 
         return empleado.getErrores();
     }
